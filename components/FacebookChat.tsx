@@ -28,117 +28,85 @@ export default function FacebookChat({
     console.log("FacebookChat component mounted");
     console.log("Props received:", { appId, pageId, themeColor });
 
-    // Load the Facebook SDK asynchronously
+    // Using Facebook's official implementation pattern
     const loadFacebookSDK = () => {
-      console.log("Starting Facebook SDK load process");
+      console.log("Setting up Facebook SDK using official pattern");
 
-      // Don't load again if already loaded
-      if (document.getElementById("facebook-jssdk")) {
-        console.log("Facebook SDK script tag already exists in DOM");
-        return;
-      }
-
-      // Setup async initialization
-      console.log("Setting up fbAsyncInit");
-      window.fbAsyncInit = function () {
-        console.log("fbAsyncInit called - initializing Facebook SDK");
-        try {
-          window.FB.init({
-            appId: appId,
-            autoLogAppEvents: true,
-            xfbml: true,
-            version: "v19.0",
+      // Add Facebook SDK script
+      const facebookScript = document.createElement("script");
+      facebookScript.innerHTML = `
+        window.fbAsyncInit = function() {
+          FB.init({
+            xfbml            : true,
+            version          : 'v19.0'
           });
-          console.log("Facebook SDK initialized successfully");
-        } catch (error) {
-          console.error("Error initializing Facebook SDK:", error);
-        }
-      };
+          console.log("Facebook SDK initialized through official pattern");
+        };
 
-      try {
-        console.log("Creating Facebook SDK script element");
-        // Load the SDK
-        const script = document.createElement("script");
-        script.id = "facebook-jssdk";
-        script.defer = true;
-        script.async = true;
-        script.crossOrigin = "anonymous";
-        script.src =
-          "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
+        (function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = 'https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js';
+          fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+      `;
 
-        // Add event listeners to track script loading
-        script.onload = () =>
-          console.log("Facebook SDK script loaded successfully");
-        script.onerror = (error) =>
-          console.error("Error loading Facebook SDK script:", error);
-
-        const firstScript = document.getElementsByTagName("script")[0];
-        if (firstScript && firstScript.parentNode) {
-          console.log("Inserting Facebook SDK script before first script");
-          firstScript.parentNode.insertBefore(script, firstScript);
-        } else {
-          console.log("No existing scripts found, appending to head");
-          document.head.appendChild(script);
-        }
-      } catch (error) {
-        console.error("Error setting up Facebook SDK script:", error);
-      }
+      document.head.appendChild(facebookScript);
     };
 
+    // Clean up any existing instances first
+    const existingScript = document.getElementById("facebook-jssdk");
+    if (existingScript && existingScript.parentNode) {
+      existingScript.parentNode.removeChild(existingScript);
+    }
+
+    const fbRoot = document.getElementById("fb-root");
+    if (fbRoot) {
+      fbRoot.innerHTML = "";
+    } else {
+      const newFbRoot = document.createElement("div");
+      newFbRoot.id = "fb-root";
+      document.body.appendChild(newFbRoot);
+    }
+
+    // Create the customerchat div directly
+    let chatDiv = document.querySelector(".fb-customerchat");
+    if (chatDiv) {
+      chatDiv.remove();
+    }
+
+    chatDiv = document.createElement("div");
+    chatDiv.className = "fb-customerchat";
+    chatDiv.setAttribute("attribution", "setup_tool");
+    chatDiv.setAttribute("page_id", pageId);
+
+    if (themeColor) {
+      chatDiv.setAttribute("theme_color", themeColor);
+    }
+    if (loggedInGreeting) {
+      chatDiv.setAttribute("logged_in_greeting", loggedInGreeting);
+    }
+    if (loggedOutGreeting) {
+      chatDiv.setAttribute("logged_out_greeting", loggedOutGreeting);
+    }
+
+    const fbRootElement = document.getElementById("fb-root");
+    if (fbRootElement) {
+      fbRootElement.appendChild(chatDiv);
+    }
+
+    // Load the SDK
     loadFacebookSDK();
 
-    // Check if the chat element is rendered every second for 10 seconds
-    const chatCheckInterval = setInterval(() => {
-      const chatElement = document.querySelector(".fb-customerchat");
-      console.log("Checking if chat element is rendered:", chatElement);
-
-      // Check if FB object is available
-      if (window.FB) {
-        console.log("FB object is available");
-        try {
-          // Try to parse XFBML again in case it failed
-          window.FB.XFBML.parse();
-          console.log("FB.XFBML.parse() executed");
-        } catch (error) {
-          console.error("Error executing FB.XFBML.parse():", error);
-        }
-      } else {
-        console.log("FB object is not available yet");
-      }
-    }, 3000); // Check every 3 seconds
-
-    // Stop checking after 30 seconds
-    setTimeout(() => {
-      clearInterval(chatCheckInterval);
-      console.log("Stopped checking for chat element");
-    }, 30000);
-
-    // Cleanup on unmount
+    // Cleanup
     return () => {
-      console.log("FacebookChat component unmounting, cleaning up");
-      clearInterval(chatCheckInterval);
-
-      const fbRoot = document.getElementById("fb-root");
-      if (fbRoot) {
-        console.log("Clearing fb-root element");
-        fbRoot.innerHTML = "";
-      }
+      console.log("FacebookChat component unmounting");
+      // We intentionally don't remove the FB script on unmount
+      // as that can cause issues with FB's internal state
     };
-  }, [appId, pageId]);
+  }, [appId, pageId, themeColor, loggedInGreeting, loggedOutGreeting]);
 
-  console.log("Rendering FacebookChat component");
-
-  return (
-    <>
-      <div id="fb-root"></div>
-      <div
-        className="fb-customerchat"
-        data-attribution="setup_tool"
-        data-page_id={pageId}
-        data-theme_color={themeColor}
-        data-logged_in_greeting={loggedInGreeting}
-        data-logged_out_greeting={loggedOutGreeting}
-      ></div>
-    </>
-  );
+  // No need for React to render elements that FB will handle
+  return null;
 }
