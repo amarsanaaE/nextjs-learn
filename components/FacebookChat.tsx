@@ -1,32 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-declare global {
-  interface Window {
-    fbAsyncInit: () => void;
-    FB: {
-      init: (options: {
-        xfbml?: boolean;
-        version: string;
-        appId?: string;
-        autoLogAppEvents?: boolean;
-      }) => void;
-      XFBML: {
-        parse: (element?: HTMLElement) => void;
-      };
-      CustomerChat: {
-        show: (shouldShowDialog?: boolean) => void;
-        hide: () => void;
-        hideDialog: () => void;
-        showDialog: () => void;
-      };
-    };
-  }
-}
+import { useEffect } from "react";
+import Script from "next/script";
 
 interface FacebookChatProps {
-  appId: string;
   pageId: string;
   themeColor?: string;
   loggedInGreeting?: string;
@@ -34,22 +11,25 @@ interface FacebookChatProps {
 }
 
 export default function FacebookChat({
-  appId,
   pageId,
   themeColor = "#0084ff",
   loggedInGreeting = "Hi! How can we help you?",
   loggedOutGreeting = "Hi! How can we help you?",
 }: FacebookChatProps) {
-  const [showChat, setShowChat] = useState(false);
+  // This function will be called once the Facebook SDK is loaded
+  const handleFbLoad = () => {
+    console.log("Facebook SDK script loaded successfully");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    // Create a fallback button in case the chat doesn't appear
+    const createFallbackButton = () => {
+      console.log("Creating fallback button");
+      // Check if button already exists
+      if (document.getElementById("fb-fallback-button")) {
+        return;
+      }
 
-    console.log("FacebookChat component mounted with pageId:", pageId);
-
-    // Create a chat button as fallback
-    const createChatButton = () => {
       const button = document.createElement("button");
+      button.id = "fb-fallback-button";
       button.textContent = "Chat with us";
       button.style.position = "fixed";
       button.style.bottom = "20px";
@@ -68,157 +48,60 @@ export default function FacebookChat({
       };
 
       document.body.appendChild(button);
-      return button;
-    };
 
-    // Manually create Facebook elements to ensure proper rendering
-    const setupFacebookElements = () => {
-      // Ensure we have fb-root
-      if (!document.getElementById("fb-root")) {
-        const root = document.createElement("div");
-        root.id = "fb-root";
-        document.body.appendChild(root);
-        console.log("Created fb-root element");
-      }
-
-      // Create chat element manually
-      let chatElement = document.querySelector(".fb-customerchat");
-      if (!chatElement) {
-        chatElement = document.createElement("div");
-        chatElement.className = "fb-customerchat";
-        chatElement.setAttribute("attribution", "setup_tool");
-        chatElement.setAttribute("page_id", pageId);
-        if (themeColor) {
-          chatElement.setAttribute("theme_color", themeColor);
-        }
-        if (loggedInGreeting) {
-          chatElement.setAttribute("logged_in_greeting", loggedInGreeting);
-        }
-        if (loggedOutGreeting) {
-          chatElement.setAttribute("logged_out_greeting", loggedOutGreeting);
-        }
-
-        const fbRoot = document.getElementById("fb-root");
-        if (fbRoot) {
-          fbRoot.appendChild(chatElement);
-          console.log("Manually created fb-customerchat element", chatElement);
-        }
-      } else {
-        console.log("Chat element already exists");
-      }
-    };
-
-    // Try to load Facebook SDK with a timeout
-    const loadFacebookSDK = () => {
-      return new Promise<void>((resolve, reject) => {
-        try {
-          // Remove any existing script
-          const existingScript = document.getElementById("facebook-jssdk");
-          if (existingScript) {
-            existingScript.remove();
-          }
-
-          // Set up Facebook init
-          window.fbAsyncInit = function () {
-            console.log("Facebook SDK initialized");
-            window.FB.init({
-              xfbml: false, // We'll parse manually
-              version: "v19.0",
-              appId: appId,
-            });
-
-            // Add a slight delay before parsing XFBML to ensure DOM is ready
-            setTimeout(() => {
-              console.log("Manually parsing XFBML");
-              window.FB.XFBML.parse();
-            }, 1000);
-
-            resolve();
-          };
-
-          // Create new script element
-          const script = document.createElement("script");
-          script.id = "facebook-jssdk";
-          script.src = "https://connect.facebook.net/en_US/sdk.js";
-          script.async = true;
-          script.defer = true;
-          script.crossOrigin = "anonymous";
-          script.onerror = () => {
-            console.log(
-              "Facebook SDK failed to load - creating fallback chat button"
-            );
-            reject(new Error("Failed to load Facebook SDK"));
-          };
-
-          document.head.appendChild(script);
-
-          // Set timeout in case it hangs
-          setTimeout(() => {
-            if (!window.FB) {
-              reject(new Error("Facebook SDK load timeout"));
-            }
-          }, 5000);
-        } catch (error) {
-          reject(error);
-        }
-      });
-    };
-
-    let chatButton: HTMLButtonElement | null = null;
-
-    // Set up elements first
-    setupFacebookElements();
-
-    loadFacebookSDK()
-      .then(() => {
-        console.log("Facebook SDK loaded successfully");
-        setShowChat(true);
-
-        // Try parsing XFBML again after a delay
-        setTimeout(() => {
-          if (window.FB) {
-            console.log("Re-parsing XFBML after delay");
-            window.FB.XFBML.parse();
-          }
-        }, 3000);
-      })
-      .catch((error) => {
-        console.error("Error loading Facebook SDK:", error);
-        chatButton = createChatButton();
-      });
-
-    // Debug visibility issues - check if elements might be hidden
-    const debugInterval = setInterval(() => {
-      const chatEl = document.querySelector(".fb-customerchat");
-      if (chatEl) {
-        console.log(
-          "Chat element exists. Styles:",
-          window.getComputedStyle(chatEl)
-        );
-
-        // Look for Facebook's iframe which contains the actual chat widget
-        const chatIframe = document.querySelector('iframe[title="Chat"]');
+      // Hide fallback button if chat appears
+      const checkInterval = setInterval(() => {
+        const chatIframe = document.querySelector('iframe[title^="Messenger"]');
         if (chatIframe) {
-          console.log("Chat iframe found:", chatIframe);
           console.log(
-            "Chat iframe styles:",
-            window.getComputedStyle(chatIframe)
+            "Facebook chat iframe detected, removing fallback button"
           );
-        } else {
-          console.log("No chat iframe found yet");
+          button.remove();
+          clearInterval(checkInterval);
         }
-      }
-    }, 5000);
+      }, 2000);
 
-    return () => {
-      // Clean up
-      clearInterval(debugInterval);
-      if (chatButton) {
-        chatButton.remove();
-      }
+      // Remove fallback after 30 seconds if chat doesn't appear
+      setTimeout(() => {
+        clearInterval(checkInterval);
+      }, 30000);
     };
-  }, [appId, pageId, themeColor, loggedInGreeting, loggedOutGreeting]);
 
-  // Return empty fragment - we're creating elements manually
-  return null;
+    // Check if chat appears within 10 seconds
+    setTimeout(() => {
+      const chatIframe = document.querySelector('iframe[title^="Messenger"]');
+      if (!chatIframe) {
+        console.log(
+          "No Facebook chat iframe detected after timeout, showing fallback"
+        );
+        createFallbackButton();
+      } else {
+        console.log("Facebook chat iframe detected successfully");
+      }
+    }, 10000);
+  };
+
+  return (
+    <>
+      {/* Facebook SDK script */}
+      <Script
+        id="facebook-jssdk"
+        strategy="lazyOnload"
+        src={`https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js#xfbml=1&version=v19.0`}
+        onLoad={handleFbLoad}
+        onError={(e) => console.error("Error loading Facebook SDK:", e)}
+      />
+
+      {/* Facebook Chat markup - exactly as Facebook provides it but with data- prefix for React */}
+      <div id="fb-root"></div>
+      <div
+        className="fb-customerchat"
+        data-attribution="biz_inbox"
+        data-page_id={pageId}
+        data-theme_color={themeColor}
+        data-logged_in_greeting={loggedInGreeting}
+        data-logged_out_greeting={loggedOutGreeting}
+      ></div>
+    </>
+  );
 }
