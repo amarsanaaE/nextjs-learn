@@ -9,7 +9,6 @@ export default function Page() {
           This is a simple page with a chat plugin.
         </p>
       </div>
-      <FacebookChatPlugin />
     </main>
   );
 }
