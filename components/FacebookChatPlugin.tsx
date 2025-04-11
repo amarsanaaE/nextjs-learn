@@ -27,7 +27,7 @@ function FacebookChatPlugin() {
         id="fb-customer-chat"
         className="fb-customerchat"
         data-attribution="setup_tool"
-        data-page_id="557744614099917"
+        data-page_id="597355006801976"
       ></div>
     </>
   );
