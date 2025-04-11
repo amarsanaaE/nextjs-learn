@@ -24,7 +24,6 @@ export default function RootLayout({
       <body>
         {children}
         <FacebookChat
-          appId={facebookAppId}
           pageId={facebookPageId}
           themeColor="#0084ff"
           loggedInGreeting="Hello! How can we help you today?"
