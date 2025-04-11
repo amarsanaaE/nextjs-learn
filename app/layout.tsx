@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import EmbeddedChat from "@/components/FacebookChat";
+import FacebookChat from "@/components/FacebookChat";
 
 export const metadata: Metadata = {
   title: {
@@ -22,10 +22,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <EmbeddedChat
+        <FacebookChat
           pageId={facebookPageId}
           themeColor="#0084ff"
-          initialMessage="Hello! How can I help you today? 👋"
+          loggedInGreeting="Hello! How can I help you today? 👋"
+          loggedOutGreeting="Hi there! How can I assist you today? 👋"
+          greetingDialogDisplay="show"
+          greetingDialogDelay={5}
         />
       </body>
     </html>
