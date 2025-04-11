@@ -17,3 +17,75 @@ input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+.dental-logo {
+  width: 100%;
+  height: 100%;
+}
+.dental-logo #l-side {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #7CBC49;
+  stroke-dasharray: var(--lside-dash);
+  stroke-dashoffset: var(--lside-dash);
+  animation: reveal-lside 9s ease infinite;
+}
+
+.dental-logo #r-side {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #3390C3;
+  stroke-dasharray: var(--rside-dash);
+  stroke-dashoffset: var(--rside-dash);
+  animation: reveal-rside 9s ease infinite;
+}
+
+.dental-logo #mouth {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #3390C3;
+  stroke-dasharray: var(--mouth-dash);
+  stroke-dashoffset: var(--mouth-dash);
+  animation: reveal-mouth 9s ease infinite;
+}
+
+
+.dental-logo #dimple {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #3390C3;
+  stroke-dasharray: var(--dimple-dash);
+  stroke-dashoffset: var(--dimple-dash);
+  animation: reveal-dimple 9s ease-out infinite;
+}
+
+@keyframes reveal-dimple {
+  25%{ stroke-dashoffset: var(--dimple-dash);fill: transparent;}  
+  35%{ stroke-dashoffset: 0;fill: transparent;}  
+  44%{ stroke-dashoffset: 0;fill: #4cb5ee;}  
+  45%{ stroke-dashoffset: 0;fill: #4cb5ee;stroke: #4cb5ee;}  
+  100%{ stroke-dashoffset: 0;fill: #4cb5ee;stroke: #4cb5ee;}  
+}
+
+@keyframes reveal-rside {
+  8%{ stroke-dashoffset: var(--rside-dash);fill: transparent;}  
+  18%{ stroke-dashoffset: 0;fill: transparent;}  
+  32%{ stroke-dashoffset: 0;fill:#73bbe1;}  
+  33%{ stroke-dashoffset: 0;fill:url(#r_side_gradient);stroke: #4cb5ee;}  
+  100%{ stroke-dashoffset: 0;fill:url(#r_side_gradient);stroke: #4cb5ee;}  
+}
+
+@keyframes reveal-mouth {
+  15%{ stroke-dashoffset: var(--mouth-dash);fill: transparent;}  
+  25%{ stroke-dashoffset: 0;fill: transparent;}  
+  37%{ stroke-dashoffset: 0;fill:#65c9ff;}  
+  38%{ stroke-dashoffset: 0;fill:url(#mouth_gradient);stroke: #4cb5ee;}  
+  100%{ stroke-dashoffset: 0;fill:url(#mouth_gradient);stroke: #4cb5ee;}  
+}
+
+@keyframes reveal-lside {
+  10%{ stroke-dashoffset: 0;fill: transparent;}  
+  25%{ stroke-dashoffset: 0;fill:#7CBC49;}  
+  26%{ stroke-dashoffset: 0;fill:url(#l_side_gradient);stroke: #a3e56c;}  
+  100%{ stroke-dashoffset: 0;fill:url(#l_side_gradient);stroke: #a3e56c;}  
+}
