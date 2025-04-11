@@ -1,3 +1,5 @@
+import FacebookChatPlugin from "@/components/FacebookChatPlugin";
+
 export default function Page() {
   return (
     <main className="flex min-h-screen flex-col p-6">
@@ -7,6 +9,7 @@ export default function Page() {
           This is a simple page with a chat plugin.
         </p>
       </div>
+      <FacebookChatPlugin />
     </main>
   );
 }

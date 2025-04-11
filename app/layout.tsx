@@ -17,10 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-        <FacebookChatPlugin />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
