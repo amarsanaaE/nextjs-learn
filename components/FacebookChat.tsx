@@ -71,6 +71,43 @@ export default function FacebookChat({
       return button;
     };
 
+    // Manually create Facebook elements to ensure proper rendering
+    const setupFacebookElements = () => {
+      // Ensure we have fb-root
+      if (!document.getElementById("fb-root")) {
+        const root = document.createElement("div");
+        root.id = "fb-root";
+        document.body.appendChild(root);
+        console.log("Created fb-root element");
+      }
+
+      // Create chat element manually
+      let chatElement = document.querySelector(".fb-customerchat");
+      if (!chatElement) {
+        chatElement = document.createElement("div");
+        chatElement.className = "fb-customerchat";
+        chatElement.setAttribute("attribution", "setup_tool");
+        chatElement.setAttribute("page_id", pageId);
+        if (themeColor) {
+          chatElement.setAttribute("theme_color", themeColor);
+        }
+        if (loggedInGreeting) {
+          chatElement.setAttribute("logged_in_greeting", loggedInGreeting);
+        }
+        if (loggedOutGreeting) {
+          chatElement.setAttribute("logged_out_greeting", loggedOutGreeting);
+        }
+
+        const fbRoot = document.getElementById("fb-root");
+        if (fbRoot) {
+          fbRoot.appendChild(chatElement);
+          console.log("Manually created fb-customerchat element", chatElement);
+        }
+      } else {
+        console.log("Chat element already exists");
+      }
+    };
+
     // Try to load Facebook SDK with a timeout
     const loadFacebookSDK = () => {
       return new Promise<void>((resolve, reject) => {
@@ -85,10 +122,17 @@ export default function FacebookChat({
           window.fbAsyncInit = function () {
             console.log("Facebook SDK initialized");
             window.FB.init({
-              xfbml: true,
+              xfbml: false, // We'll parse manually
               version: "v19.0",
               appId: appId,
             });
+
+            // Add a slight delay before parsing XFBML to ensure DOM is ready
+            setTimeout(() => {
+              console.log("Manually parsing XFBML");
+              window.FB.XFBML.parse();
+            }, 1000);
+
             resolve();
           };
 
@@ -122,38 +166,59 @@ export default function FacebookChat({
 
     let chatButton: HTMLButtonElement | null = null;
 
+    // Set up elements first
+    setupFacebookElements();
+
     loadFacebookSDK()
       .then(() => {
         console.log("Facebook SDK loaded successfully");
         setShowChat(true);
+
+        // Try parsing XFBML again after a delay
+        setTimeout(() => {
+          if (window.FB) {
+            console.log("Re-parsing XFBML after delay");
+            window.FB.XFBML.parse();
+          }
+        }, 3000);
       })
       .catch((error) => {
         console.error("Error loading Facebook SDK:", error);
         chatButton = createChatButton();
       });
 
+    // Debug visibility issues - check if elements might be hidden
+    const debugInterval = setInterval(() => {
+      const chatEl = document.querySelector(".fb-customerchat");
+      if (chatEl) {
+        console.log(
+          "Chat element exists. Styles:",
+          window.getComputedStyle(chatEl)
+        );
+
+        // Look for Facebook's iframe which contains the actual chat widget
+        const chatIframe = document.querySelector('iframe[title="Chat"]');
+        if (chatIframe) {
+          console.log("Chat iframe found:", chatIframe);
+          console.log(
+            "Chat iframe styles:",
+            window.getComputedStyle(chatIframe)
+          );
+        } else {
+          console.log("No chat iframe found yet");
+        }
+      }
+    }, 5000);
+
     return () => {
       // Clean up
+      clearInterval(debugInterval);
       if (chatButton) {
         chatButton.remove();
       }
     };
-  }, [appId, pageId, themeColor]);
+  }, [appId, pageId, themeColor, loggedInGreeting, loggedOutGreeting]);
 
-  return (
-    <>
-      <div id="fb-root"></div>
-
-      {showChat && (
-        <div
-          className="fb-customerchat"
-          data-attribution="setup_tool"
-          data-page_id={pageId}
-          data-theme_color={themeColor}
-          data-logged_in_greeting={loggedInGreeting}
-          data-logged_out_greeting={loggedOutGreeting}
-        ></div>
-      )}
-    </>
-  );
+  // Return empty fragment - we're creating elements manually
+  return null;
 }
