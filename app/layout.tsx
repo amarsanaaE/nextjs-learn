@@ -1,5 +1,3 @@
-import "@/app/ui/global.css";
-import { inter } from "./ui/fonts";
 import { Metadata } from "next";
 import FacebookChatPlugin from "@/components/FacebookChatPlugin";
 
@@ -19,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body>
         {children}
         <FacebookChatPlugin />
       </body>
