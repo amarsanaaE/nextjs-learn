@@ -27,8 +27,6 @@ export default function RootLayout({
           themeColor="#0084ff"
           loggedInGreeting="Hello! How can I help you today? 👋"
           loggedOutGreeting="Hi there! How can I assist you today? 👋"
-          greetingDialogDisplay="show"
-          greetingDialogDelay={5}
         />
       </body>
     </html>
