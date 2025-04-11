@@ -25,44 +25,41 @@ export default function FacebookChat({
   loggedOutGreeting = "Hi! How can we help you?",
 }: FacebookChatProps) {
   useEffect(() => {
-    // Load Facebook SDK
+    // Load the Facebook SDK asynchronously
     const loadFacebookSDK = () => {
-      if (document.getElementById("facebook-jssdk")) {
-        initFacebookChat();
-        return;
-      }
+      // Don't load again if already loaded
+      if (document.getElementById("facebook-jssdk")) return;
 
+      // Setup async initialization
       window.fbAsyncInit = function () {
         window.FB.init({
+          appId: appId,
+          autoLogAppEvents: true,
           xfbml: true,
           version: "v19.0",
         });
       };
 
-      const fjs = document.getElementsByTagName("script")[0];
-      const js = document.createElement("script");
-      js.id = "facebook-jssdk";
-      js.src = `https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js#xfbml=1&version=v19.0&appId=${appId}&autoLogAppEvents=1`;
-      js.async = true;
-      js.defer = true;
-      js.crossOrigin = "anonymous";
-      if (fjs && fjs.parentNode) {
-        fjs.parentNode.insertBefore(js, fjs);
-      } else {
-        document.head.appendChild(js);
-      }
-    };
+      // Load the SDK
+      const script = document.createElement("script");
+      script.id = "facebook-jssdk";
+      script.defer = true;
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      script.src =
+        "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
 
-    const initFacebookChat = () => {
-      // Wait for FB SDK to initialize before adding the chat plugin
-      if (window.FB) {
-        window.FB.XFBML.parse();
+      const firstScript = document.getElementsByTagName("script")[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(script, firstScript);
+      } else {
+        document.head.appendChild(script);
       }
     };
 
     loadFacebookSDK();
 
-    // Cleanup
+    // Cleanup on unmount
     return () => {
       const fbRoot = document.getElementById("fb-root");
       if (fbRoot) {
@@ -76,7 +73,7 @@ export default function FacebookChat({
       <div id="fb-root"></div>
       <div
         className="fb-customerchat"
-        data-attribution="biz_inbox"
+        data-attribution="setup_tool"
         data-page_id={pageId}
         data-theme_color={themeColor}
         data-logged_in_greeting={loggedInGreeting}
