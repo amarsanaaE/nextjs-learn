@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import FacebookChatPlugin from "@/components/FacebookChatPlugin";
+import FacebookChat from "@/components/FacebookChat";
 
 export const metadata: Metadata = {
   title: {
@@ -15,11 +15,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Replace these values with your actual Facebook App ID and Page ID
+  const facebookAppId = "1427973608364187";
+  const facebookPageId = "597355006801976";
+
   return (
     <html lang="en">
       <body>
         {children}
-        <FacebookChatPlugin />
+        <FacebookChat
+          appId={facebookAppId}
+          pageId={facebookPageId}
+          themeColor="#0084ff"
+          loggedInGreeting="Hello! How can we help you today?"
+          loggedOutGreeting="Hello! How can we assist you?"
+        />
       </body>
     </html>
   );
