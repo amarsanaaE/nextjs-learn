@@ -1,6 +1,7 @@
 import { Metadata } from "next";
-import FacebookChat from "@/components/FacebookChat";
+import Script from "next/script";
 import FacebookChatPackage from "@/components/reactFb";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
@@ -16,20 +17,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Your Facebook Page ID
-  const facebookPageId = "597355006801976";
-
   return (
     <html lang="en">
-      <body>
+      <head>
+        <Script
+          async
+          defer
+          crossOrigin="anonymous"
+          src="https://connect.facebook.net/en_US/sdk.js"
+          strategy="afterInteractive"
+        />
+      </head>
+      <body className="antialiased">
         {children}
         <FacebookChatPackage />
-        {/* <FacebookChat
-          pageId={facebookPageId}
-          themeColor="#0084ff"
-          loggedInGreeting="Hello! How can I help you today? 👋"
-          loggedOutGreeting="Hi there! How can I assist you today? 👋"
-        /> */}
       </body>
     </html>
   );
