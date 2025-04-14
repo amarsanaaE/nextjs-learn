@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import FacebookChat from "@/components/FacebookChat";
+import FacebookChatPackage from "@/components/reactFb";
 
 export const metadata: Metadata = {
   title: {
@@ -22,12 +23,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <FacebookChat
+        <FacebookChatPackage />
+        {/* <FacebookChat
           pageId={facebookPageId}
           themeColor="#0084ff"
           loggedInGreeting="Hello! How can I help you today? 👋"
           loggedOutGreeting="Hi there! How can I assist you today? 👋"
-        />
+        /> */}
       </body>
     </html>
   );
