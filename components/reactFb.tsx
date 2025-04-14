@@ -1,25 +1,38 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { FacebookProvider, CustomChat } from "react-facebook";
+import React, { useEffect } from "react";
 
 export default function FacebookChatPackage() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Only render the chat component on the client side
-  if (!isClient) return null;
-
-  const appId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || "1427973608364187";
   const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID || "597355006801976";
 
+  useEffect(() => {
+    // Check if Facebook SDK is loaded
+    if (typeof window !== "undefined" && "FB" in window) {
+      window.FB.XFBML.parse();
+    }
+
+    // Add event listener for when FB SDK is loaded asynchronously
+    const handleFbInit = () => {
+      if (typeof window !== "undefined" && "FB" in window) {
+        window.FB.XFBML.parse();
+      }
+    };
+
+    window.addEventListener("fbAsyncInit", handleFbInit);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("fbAsyncInit", handleFbInit);
+    };
+  }, []);
+
   return (
-    <div className="fb-chat-container">
-      <FacebookProvider appId={appId} chatSupport>
-        <CustomChat pageId={pageId} minimized={true} themeColor="#0070F3" />
-      </FacebookProvider>
-    </div>
+    <>
+      <div
+        className="fb-customerchat"
+        data-attribution="biz_inbox"
+        data-page_id={pageId}
+        data-theme_color="#0070F3"
+      ></div>
+    </>
   );
 }

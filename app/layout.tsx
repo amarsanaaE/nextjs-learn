@@ -21,11 +21,29 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script
-          async
-          defer
-          crossOrigin="anonymous"
+          id="facebook-jssdk"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.fbAsyncInit = function() {
+                FB.init({
+                  appId: '${
+                    process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ||
+                    "1427973608364187"
+                  }',
+                  autoLogAppEvents: true,
+                  xfbml: true,
+                  version: 'v18.0'
+                });
+              };
+            `,
+          }}
+        />
+        <Script
+          strategy="lazyOnload"
           src="https://connect.facebook.net/en_US/sdk.js"
-          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          nonce="rAnd0m"
         />
       </head>
       <body className="antialiased">
